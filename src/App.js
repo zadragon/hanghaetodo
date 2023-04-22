@@ -1,4 +1,4 @@
-import { Button, Card, Header, Icon, Image, Input } from "semantic-ui-react";
+import { Button, Header, Icon, Input } from "semantic-ui-react";
 import "./App.css";
 import { useRef, useState } from "react";
 import CardTemp from "./components/CardTemp";
