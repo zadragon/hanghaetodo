@@ -1,19 +1,23 @@
 import { Button, Header, Icon, Input } from "semantic-ui-react";
 import "./App.css";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CardTemp from "./components/CardTemp";
 
 function App() {
-	let initialState = [
-		//{ id: 0, title: "", body: "", isDone: false, date: "" }
-	];
+	let initialState = [];
 	const [state, setState] = useState(initialState);
 	const [inputs, setInputs] = useState({
 		title: "",
 		body: "",
 	});
 	const { title, body } = inputs; // 비구조화 할당을 통해 값 추출
-	const nextId = useRef(0);
+
+	useEffect(() => {
+		localStorage.setItem("appTodo", JSON.stringify(state));
+		console.log(state);
+	}, [state]);
+
+	const nextId = useRef(state.length);
 
 	const onChangeHandler = (e) => {
 		const { value, name } = e.target; // 우선 e.target 에서 name 과 value 를 추출
@@ -42,7 +46,6 @@ function App() {
 		};
 
 		setState([...state, todo]);
-
 		setInputs({
 			title: "",
 			body: "",
