@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import CardTemp from "./components/CardTemp";
 
 function App() {
-	let initialState = [];
-	const [state, setState] = useState(initialState);
+	console.log(localStorage.getItem("appTodo"));
+	let todoState = JSON.parse(localStorage.getItem("appTodo"));
+	const [state, setState] = useState(todoState);
 	const [inputs, setInputs] = useState({
 		title: "",
 		body: "",
@@ -51,6 +52,7 @@ function App() {
 			body: "",
 		});
 		nextId.current += 1;
+		//localStorage.setItem("appTodo", JSON.stringify(state));
 	};
 
 	const onToggle = (id) => {
