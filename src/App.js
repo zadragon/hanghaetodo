@@ -5,7 +5,7 @@ import CardTemp from "./components/CardTemp";
 
 function App() {
 	let todoState = JSON.parse(localStorage.getItem("appTodo"));
-	const [state, setState] = useState(todoState);
+	const [state, setState] = useState(todoState.length > 0 ? todoState : []);
 	const [inputs, setInputs] = useState({
 		title: "",
 		body: "",
@@ -16,10 +16,17 @@ function App() {
 		localStorage.setItem("appTodo", JSON.stringify(state));
 	}, [state]);
 
-	const nextId = useRef(state.length);
+	const nextId = useRef(state && state.length);
+	const idRef = useRef("");
+	const bodyRef = useRef("");
 
 	const onChangeHandler = (e) => {
 		const { value, name } = e.target; // 우선 e.target 에서 name 과 value 를 추출
+		if (name === "title") {
+			if (value.length > 10) {
+				bodyRef.current.focus();
+			}
+		}
 		setInputs({
 			...inputs, // 기존의 input 객체를 복사한 뒤
 			[name]: value, // name 키를 가진 값을 value 로 설정
@@ -71,8 +78,8 @@ function App() {
 			</Header>
 
 			<div className="inputArea">
-				<Input onChange={onChangeHandler} name="title" value={title} label="제목" placeholder="제목을 입력해주세요." />
-				<Input onChange={onChangeHandler} name="body" value={body} label="내용" placeholder="내용을 입력해주세요." />
+				<Input onChange={onChangeHandler} name="title" ref={idRef} value={title} label="제목" placeholder="제목을 입력해주세요." />
+				<Input onChange={onChangeHandler} name="body" ref={bodyRef} value={body} label="내용" placeholder="내용을 입력해주세요." />
 				<Button onClick={onSubmitHandler} basic color="black" content="Black">
 					추가하기
 				</Button>
@@ -81,7 +88,7 @@ function App() {
 			<div className="todoListArea">
 				<Header as="h3">Working  🍭</Header>
 				<div className="todoList">
-					{state.map((item) => {
+					{state?.map((item) => {
 						if (!item.isDone) {
 							return (
 								<CardTemp
@@ -102,7 +109,7 @@ function App() {
 			<div className="todoListArea">
 				<Header as="h3">Done 🥰</Header>
 				<div className="todoList">
-					{state.map((item) => {
+					{state?.map((item) => {
 						if (item.isDone) {
 							return (
 								<CardTemp
