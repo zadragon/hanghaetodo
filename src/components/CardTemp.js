@@ -3,7 +3,7 @@ import { Button, Card, Image } from "semantic-ui-react";
 
 const CardTemp = ({ id, title, date, body, isDone, onToggle, onDelete }) => {
 	return (
-		<Card key={id}>
+		<Card>
 			<Card.Content>
 				<Image floated="right" size="mini" src="/steve.jpg" />
 				<Card.Header>{title}</Card.Header>

@@ -2,10 +2,32 @@ import { Button, Header, Icon, Input } from "semantic-ui-react";
 import "./App.css";
 import { useEffect, useRef, useState } from "react";
 import CardTemp from "./components/CardTemp";
+import { useDispatch, useSelector } from "react-redux";
+import { todoInit, todoAdd, todoDone, todoDelete } from "./redux/modules/todos";
+import * as S from "./styles/index";
 
 function App() {
-	let todoState = JSON.parse(localStorage.getItem("appTodo"));
-	const [state, setState] = useState(todoState.length > 0 ? todoState : []);
+	const dispatch = useDispatch();
+
+	useEffect(() => {
+		const getData = JSON.parse(localStorage.getItem("appTodo"));
+		if (getData !== null) {
+			dispatch(todoInit(getData));
+		}
+	}, []);
+
+	let todos = useSelector((state) => state.todos);
+	let initId = todos?.reduce((acc, item) => {
+		console.log(item);
+		return acc < item.id ? item.id : acc;
+	}, 0);
+	console.log(initId);
+	const [lastId, setLastId] = useState(initId);
+	const nextId = useRef(initId);
+	const idRef = useRef("");
+	const bodyRef = useRef("");
+
+	//const [state, setState] = useState(todos);
 	const [inputs, setInputs] = useState({
 		title: "",
 		body: "",
@@ -13,12 +35,13 @@ function App() {
 	const { title, body } = inputs; // 비구조화 할당을 통해 값 추출
 
 	useEffect(() => {
-		localStorage.setItem("appTodo", JSON.stringify(state));
-	}, [state]);
-
-	const nextId = useRef(state && state.length);
-	const idRef = useRef("");
-	const bodyRef = useRef("");
+		const getData = JSON.parse(localStorage.getItem("appTodo"));
+		if (todos.length > 0) {
+			localStorage.setItem("appTodo", JSON.stringify(todos));
+		} else {
+			localStorage.setItem("appTodo", JSON.stringify([]));
+		}
+	}, [todos]);
 
 	const onChangeHandler = (e) => {
 		const { value, name } = e.target; // 우선 e.target 에서 name 과 value 를 추출
@@ -34,8 +57,8 @@ function App() {
 	};
 
 	const onSubmitHandler = (e) => {
+		e.preventDefault();
 		const today = new Date();
-		console.log(title, body);
 		if (title === "") {
 			alert("제목을 입력해주세요.");
 			return;
@@ -51,20 +74,23 @@ function App() {
 			date: `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}-${today.getHours()}:${today.getMinutes()}`,
 		};
 
-		setState([...state, todo]);
 		setInputs({
 			title: "",
 			body: "",
 		});
+
+		dispatch(todoAdd(todo));
+
+		idRef.current.focus();
 		nextId.current += 1;
 	};
 
 	const onToggle = (id) => {
-		setState(state.map((item) => (item.id === id ? { ...item, isDone: !item.isDone } : item)));
+		dispatch(todoDone(id));
 	};
 
 	const onDelete = (id) => {
-		setState(state.filter((item) => item.id !== id));
+		dispatch(todoDelete(id));
 	};
 
 	return (
@@ -77,55 +103,75 @@ function App() {
 				</span>
 			</Header>
 
-			<div className="inputArea">
-				<Input onChange={onChangeHandler} name="title" ref={idRef} value={title} label="제목" placeholder="제목을 입력해주세요." />
-				<Input onChange={onChangeHandler} name="body" ref={bodyRef} value={body} label="내용" placeholder="내용을 입력해주세요." />
-				<Button onClick={onSubmitHandler} basic color="black" content="Black">
-					추가하기
-				</Button>
-			</div>
+			<S.InputArea>
+				<form>
+					<Input
+						onChange={onChangeHandler}
+						name="title"
+						ref={idRef}
+						value={title}
+						label="제목"
+						placeholder="제목을 입력해주세요."
+					/>
+					<Input
+						onChange={onChangeHandler}
+						name="body"
+						ref={bodyRef}
+						value={body}
+						label="내용"
+						placeholder="내용을 입력해주세요."
+					/>
+					<Button type="submit" onClick={onSubmitHandler} basic color="black">
+						추가하기
+					</Button>
+				</form>
+			</S.InputArea>
 
-			<div className="todoListArea">
+			<S.TodoListArea>
 				<Header as="h3">Working  🍭</Header>
 				<div className="todoList">
-					{state?.map((item) => {
-						if (!item.isDone) {
-							return (
-								<CardTemp
-									id={item.id}
-									title={item.title}
-									date={item.date}
-									body={item.body}
-									isDone={item.isDone}
-									onToggle={onToggle}
-									onDelete={onDelete}
-								/>
-							);
-						}
-					})}
+					{todos.length > 0 &&
+						todos.map((item) => {
+							if (!item.isDone) {
+								return (
+									<CardTemp
+										key={item.id}
+										id={item.id}
+										title={item.title}
+										date={item.date}
+										body={item.body}
+										isDone={item.isDone}
+										onToggle={onToggle}
+										onDelete={onDelete}
+									/>
+								);
+							}
+						})}
 				</div>
-			</div>
+			</S.TodoListArea>
 
-			<div className="todoListArea">
+			<S.TodoListArea>
 				<Header as="h3">Done 🥰</Header>
 				<div className="todoList">
-					{state?.map((item) => {
-						if (item.isDone) {
-							return (
-								<CardTemp
-									id={item.id}
-									title={item.title}
-									date={item.date}
-									body={item.body}
-									isDone={item.isDone}
-									onToggle={onToggle}
-									onDelete={onDelete}
-								/>
-							);
-						}
-					})}
+					{todos.length > 0 &&
+						todos.map((item) => {
+							if (item.isDone) {
+								return (
+									<CardTemp
+										key={item.id}
+										id={item.id}
+										title={item.title}
+										date={item.date}
+										body={item.body}
+										isDone={item.isDone}
+										onToggle={onToggle}
+										onDelete={onDelete}
+									/>
+								);
+							}
+						})}
 				</div>
-			</div>
+			</S.TodoListArea>
 		</div>
 	);
 }
